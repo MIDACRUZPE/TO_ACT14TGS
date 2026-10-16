@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POLI - Miniweb TGS & NotebookLM (TO_ACT14)</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        poli: {
+                            blue: '#002B49',
+                            gold: '#D4AF37',
+                            accent: '#00A86B',
+                            darkBg: '#0f172a',
+                            cardBg: '#1e293b'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome Icons CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+
+        /* Ocultar elementos de UI al imprimir directamente la página principal (Ctrl + P) */
+        @media print {
+            header, footer, section:first-of-type, #module-tabs, .no-print, #pdf-tooltip, details, button {
+                display: none !important;
+            }
+            body {
+                background-color: #ffffff !important;
+                color: #000000 !important;
+            }
+            .module-content {
+                display: block !important;
+            }
+            .concept-card {
+                background-color: #ffffff !important;
+                border: 1px solid #cbd5e1 !important;
+                color: #000000 !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                margin-bottom: 1rem !important;
+            }
+            textarea {
+                border: 1px solid #94a3b8 !important;
+                background-color: #f8fafc !important;
+                color: #0f172a !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen font-sans antialiased flex flex-col justify-between">
+
+    <!-- Header Institucional -->
+    <header class="bg-slate-950 border-b border-slate-800 sticky top-0 z-50 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-lg bg-blue-700 flex items-center justify-center font-bold text-xl text-white shadow-lg">
+                    PG
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold text-slate-100 leading-tight">Politécnico Grancolombiano</h1>
+                    <p class="text-xs text-blue-400 font-medium">Teoría General de Sistemas (TGS) • NotebookLM Integration</p>
+                </div>
+            </div>
+
+            <!-- Progreso General -->
+            <div class="flex items-center gap-4 bg-slate-900 px-4 py-2 rounded-xl border border-slate-800">
+                <div class="text-right">
+                    <span class="text-xs text-slate-400 block font-semibold">Avance General</span>
+                    <span id="progress-text" class="text-sm font-bold text-emerald-400">0% Completado</span>
+                </div>
+                <div class="w-28 bg-slate-800 h-3 rounded-full overflow-hidden border border-slate-700">
+                    <div id="progress-bar" class="bg-gradient-to-r from-blue-500 to-emerald-400 h-full w-0 transition-all duration-300"></div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full space-y-8">
+
+        <!-- Banner Guía Paso a Paso -->
+        <section class="bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl pointer-events-none"></div>
+            <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-route text-blue-400"></i> Ruta de Trabajo Autónomo
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-700/60">
+                    <span class="text-xs font-bold text-blue-400 uppercase tracking-wider block mb-1">Paso 1</span>
+                    <h3 class="text-sm font-semibold text-slate-200 mb-1">Consulta NotebookLM</h3>
+                    <p class="text-xs text-slate-400">Revisa la pregunta y utiliza el prompt prefabricado en NotebookLM con el texto de Chiavenato.</p>
+                </div>
+                <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-700/60">
+                    <span class="text-xs font-bold text-blue-400 uppercase tracking-wider block mb-1">Paso 2</span>
+                    <h3 class="text-sm font-semibold text-slate-200 mb-1">Cita e Interpretación</h3>
+                    <p class="text-xs text-slate-400">Pega la evidencia del texto (Columna A) y redacta tu análisis de 250 a 600 caracteres (Columna B).</p>
+                </div>
+                <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-700/60">
+                    <span class="text-xs font-bold text-blue-400 uppercase tracking-wider block mb-1">Paso 3</span>
+                    <h3 class="text-sm font-semibold text-slate-200 mb-1">Enviar a Docente</h3>
+                    <p class="text-xs text-slate-400">Al completar los 10 conceptos, haz clic en "Enviar Trabajo" para registrar tu entrega en Sheets.</p>
+                </div>
+                <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-700/60 border-emerald-500/30">
+                    <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider block mb-1">Paso 4</span>
+                    <h3 class="text-sm font-semibold text-slate-200 mb-1">Exportar Evidencia</h3>
+                    <p class="text-xs text-slate-400">Descarga tu informe oficial en PDF para adjuntarlo en la plataforma institucional.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Formulario Datos de Identificación (Sección 0) -->
+        <section class="bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-xl">
+            <h2 class="text-lg font-bold text-slate-100 mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-id-card text-blue-400"></i> Identificación del Taller
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">Materia</label>
+                    <input type="text" id="input-materia" value="Teoría de la Organización" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition" oninput="saveToLocalStorage()" />
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">ID de Actividad (Inalterable)</label>
+                    <input type="text" id="input-actividad-id" name="actividad_id" value="TO_ACT14" readonly class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-400 font-mono cursor-not-allowed" />
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">Grupo / Subgrupo <span class="text-red-400">*</span></label>
+                    <input type="text" id="input-grupo" placeholder="Ej: Grupo 01" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition" oninput="saveToLocalStorage()" />
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">Integrantes del Equipo <span class="text-red-400">*</span></label>
+                    <input type="text" id="input-participantes" placeholder="Nombres completos..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition" oninput="saveToLocalStorage()" />
+                </div>
+            </div>
+            
+            <!-- Barra de utilidades JSON Local -->
+            <div class="mt-4 pt-4 border-t border-slate-700/60 flex flex-wrap justify-between items-center gap-2 text-xs">
+                <span class="text-slate-400"><i class="fa-solid fa-floppy-disk text-emerald-400 mr-1"></i> Autoguardado activo en navegador.</span>
+                <div class="flex gap-2">
+                    <button onclick="downloadBackup()" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-download"></i> Descargar JSON
+                    </button>
+                    <label class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg transition cursor-pointer flex items-center gap-1.5">
+                        <i class="fa-solid fa-upload"></i> Cargar JSON
+                        <input type="file" id="json-file-input" class="hidden" accept=".json" onchange="handleFileUpload(event)" />
+                    </label>
+                </div>
+            </div>
+        </section>
+
+        <!-- Selector de Módulos (Tabs) -->
+        <div class="flex border-b border-slate-800 space-x-2 overflow-x-auto pb-1" id="module-tabs">
+            <button onclick="switchModule(1)" id="tab-mod-1" class="px-5 py-3 rounded-t-xl text-sm font-semibold transition border-b-2 border-blue-500 bg-slate-800 text-blue-400 flex items-center gap-2 whitespace-nowrap">
+                <span class="w-6 h-6 rounded-full bg-blue-500/20 text-blue-400 text-xs flex items-center justify-center font-bold">1</span>
+                Módulo 1: Fundamentos y Parámetros
+            </button>
+            <button onclick="switchModule(2)" id="tab-mod-2" class="px-5 py-3 rounded-t-xl text-sm font-semibold transition border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 whitespace-nowrap">
+                <span class="w-6 h-6 rounded-full bg-slate-700 text-slate-400 text-xs flex items-center justify-center font-bold">2</span>
+                Módulo 2: Dinámicas de Supervivencia
+            </button>
+            <button onclick="switchModule(3)" id="tab-mod-3" class="px-5 py-3 rounded-t-xl text-sm font-semibold transition border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 whitespace-nowrap">
+                <span class="w-6 h-6 rounded-full bg-slate-700 text-slate-400 text-xs flex items-center justify-center font-bold">3</span>
+                Módulo 3: Principios y Control
+            </button>
+        </div>
+
+        <!-- MÓDULO 1 -->
+        <div id="module-1" class="module-content space-y-6">
+            <!-- Concepto 1 -->
+            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-xl concept-card" id="card-concept-1">
+                <div class="flex justify-between items-start gap-4 mb-4">
+                    <div>
+                        <span class="text-xs font-bold text-blue-400 uppercase tracking-widest">Concepto #1</span>
+                        <h3 class="text-lg font-bold text-white">Definición de Sistema (Elementos, Relaciones, Objetivos)</h3>
+                    </div>
+                    <button onclick="copyPrompt('prompt-1')" class="text-xs bg-slate-700 hover:bg-slate-600 text-blue-300 px-3 py-1.5 rounded-lg border border-slate-600 transition flex items-center gap-1.5">
+                        <i class="fa-regular fa-copy"></i> Copiar Prompt NotebookLM
+                    </button>
+                </div>
+                <!-- Prompt Helper Accordion -->
+                <div class="mb-4 bg-slate-900/60 border border-slate-700/50 rounded-xl p-3 text-xs text-slate-400">
+                    <span class="font-semibold text-slate-300 block mb-1"><i class="fa-solid fa-lightbulb text-amber-400 mr-1"></i> Prompt sugerido para NotebookLM:</span>
+                    <code class="bg-slate-950 p-2 rounded block text-emerald-400 font-mono select-all break-words" id="prompt-1">"Explícame con mayor profundidad y un ejemplo sencillo el concepto de Definición de Sistema (Elementos, Relaciones, Objetivos) según el texto de Chiavenato."</code>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Columna A: Cita / Evidencia en NotebookLM</label>
+                        <textarea id="cita-1" rows="5" placeholder="Pega aquí el fragmento textual relevante del libro de Chiavenato..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition resize-none break-words" oninput="handleInput(1)"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Columna B: Interpretación Propia (250 - 600 Caracteres)</label>
+                        <textarea id="interp-1" rows="5" placeholder="Sintetiza con tus propias palabras la aplicación del concepto..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition resize-none break-words" oninput="handleInput(1)"></textarea>
+                        <div id="counter-status-1" aria-live="polite" class="mt-2 text-xs flex justify-between items-center font-medium">
+                            <span id="counter-msg-1" class="text-slate-400">🔴 Faltan 250 caracteres</span>
+                            <span id="counter-count-1" class="text-slate-500">0 / 600</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Concepto 2 -->
+            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-xl concept-card" id="card-concept-2">
+                <div class="flex justify-between items-start gap-4 mb-4">
+                    <div>
+                        <span class="text-xs font-bold text-blue-400 uppercase tracking-widest">Concepto #2</span>
+                        <h3 class="text-lg font-bold text-white">Sistema Abierto vs. Sistema Cerrado</h3>
+                    </div>
+                    <button onclick="copyPrompt('prompt-2')" class="text-xs bg-slate-700 hover:bg-slate-600 text-blue-300 px-3 py-1.5 rounded-lg border border-slate-600 transition flex items-center gap-1.5">
+                        <i class="fa-regular fa-copy"></i> Copiar Prompt NotebookLM
+                    </button>
+                </div>
+                <div class="mb-4 bg-slate-900/60 border border-slate-700/50 rounded-xl p-3 text-xs text-slate-400">
+                    <span class="font-semibold text-slate-300 block mb-1"><i class="fa-solid fa-lightbulb text-amber-400 mr-1"></i> Prompt sugerido para NotebookLM:</span>
+                    <code class="bg-slate-950 p-2 rounded block text-emerald-400 font-mono select-all break-words" id="prompt-2">"Explícame con mayor profundidad y un ejemplo sencillo el concepto de Sistema Abierto vs. Sistema Cerrado según el texto de Chiavenato."</code>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Columna A: Cita / Evidencia en NotebookLM</label>
+                        <textarea id="cita-2" rows="5" placeholder="Pega aquí el fragmento textual relevante del libro de Chiavenato..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition resize-none break-words" oninput="handleInput(2)"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Columna B: Interpretación Propia (250 - 600 Caracteres)</label>
+                        <textarea id="interp-2" rows="5" placeholder="Sintetiza con tus propias palabras..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition resize-none break-words" oninput="handleInput(2)"></textarea>
+                        <div id="counter-status-2" aria-live="polite" class="mt-2 text-xs flex justify-between items-center font-medium">
+                            <span id="counter-msg-2" class="text-slate-400">🔴 Faltan 250 caracteres</span>
+                            <span id="counter-count-2" class="text-slate-500">0 / 600</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Concepto 3 -->
+            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-xl concept-card" id="card-concept-3">
+                <div class="flex justify-between items-start gap-4 mb-4">
+                    <div>
+                        <span class="text-xs font-bold text-blue-400 uppercase tracking-widest">Concepto #3</span>
+                        <h3 class="text-lg font-bold text-white">Parámetros Sistémicos (Inputs, Throughput, Outputs)</h3>
+                    </div>
+                    <button onclick="copyPrompt('prompt-3')" class="text-xs bg-slate-700 hover:bg-slate-600 text-blue-300 px-3 py-1.5 rounded-lg border border-slate-600 transition flex items-center gap-1.5">
+                        <i class="fa-regular fa-copy"></i> Copiar Prompt NotebookLM
+                    </button>
+                </div>
+                <div class="mb-4 bg-slate-900/60 border border-slate-700/50 rounded-xl p-3 text-xs text-slate-400">
+                    <span class="font-semibold text-slate-300 block mb-1"><i class="fa-solid fa-lightbulb text-amber-400 mr-1"></i> Prompt sugerido para NotebookLM:</span>
+                    <code class="bg-slate-950 p-2 rounded block text-emerald-400 font-mono select-all break-words" id="prompt-3">"Explícame con mayor profundidad y un ejemplo sencillo el concepto de Parámetros Sistémicos (Inputs, Throughput, Outputs) según el texto de Chiavenato."</code>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Columna A: Cita / Evidencia en NotebookLM</label>
+                        <textarea id="cita-3" rows="5" placeholder="Pega aquí el fragmento textual..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition resize-none break-words" oninput="handleInput(3)"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Columna B: Interpretación Propia (250 - 600 Caracteres)</label>
+                        <textarea id="interp-3" rows="5" placeholder="Sintetiza con tus propias palabras..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition resize-none break-words" oninput="handleInput(3)"></textarea>
+                        <div id="counter-status-3" aria-live="polite" class="mt-2 text-xs flex justify-between items-center font-medium">
+                            <span id="counter-msg-3" class="text-slate-400">🔴 Faltan 250 caracteres</span>
+                            <span id="counter-count-3" class="text-slate-500">0 / 600</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end pt-4">
+                <button onclick="switchModule(2)" class="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl shadow-lg transition flex items-center gap-2">
+                    Avanzar al Módulo 2 <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- MÓDULO 2 -->
+        <div id="module-2" class="module-content space-y-6 hidden">
+            <!-- Concepto 4 -->
+            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-xl concept-card" id="card-concept-4">
+                <div class="flex justify-between items-start gap-4 mb-4">
+                    <div>
+                        <span class="text-xs font-bold text-blue-400 uppercase tracking-widest">Concepto #4</span>
+                        <h3 class="text-lg font-bold text-white">Expansionismo y Pensamiento Sintético</h3>
+                    </div>
+                    <button onclick="copyPrompt('prompt-4')" class="text-xs bg-slate-700 hover:bg-slate-600 text-blue-300 px-3 py-1.5 rounded-lg border border-slate-600 transition flex items-center gap-1.5">
+                        <i class="fa-regular fa-copy"></i> Copiar Prompt NotebookLM
+                    </button>
+                </div>
+                <div class="mb-4 bg-slate-900/60 border border-slate-700/50 rounded-xl p-3 text-xs text-slate-400">
+                    <span class="font-semibold text-slate-300 block mb-1"><i class="fa-solid fa-lightbulb text-amber-400 mr-1"></i> Prompt sugerido para NotebookLM:</span>
+                    <code class="bg-slate-950 p-2 rounded block text-emerald-400 font-mono select-all break-words" id="prompt-4">"Explícame con mayor profundidad y un ejemplo sencillo el concepto de Expansionismo y Pensamiento Sintético vs. Enfoque Analítico Tradicional según el texto de Chiavenato."</code>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Columna A: Cita / Evidencia en NotebookLM</label>
+                        <textarea id="cita-4" rows="5" placeholder="Pega aquí la cita de Chiavenato..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition resize-none break-words" oninput="handleInput(4)"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Columna B: Interpretación Propia (250 - 600 Caracteres)</label>
+                        <textarea id="interp-4" rows="5" placeholder="Sintetiza con tus propias palabras..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition resize-none break-words" oninput="handleInput(4)"></textarea>
+                        <div id="counter-status-4" aria-live="polite" class="mt-2 text-xs flex justify-between items-center font-medium">
+                            <span id="counter-msg-4" class="text-slate-400">🔴 Faltan 250 caracteres</span>
+                            <span id="counter-count-4" class="text-slate-500">0 / 600</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Concepto 5 -->
+            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-xl concept-card" id="card-concept-5">
+                <div class="flex justify-between items-start gap-4 mb-4">
+                    <div>
+                        <span class="text-xs font-bold text-blue-400 uppercase tracking-widest">Concepto #5</span>
+                        <h3 class="text-lg font-bold text-white">Sinergia ("El todo es diferente a la suma de sus partes")</h3>
+                    </div>
+                    <button onclick="copyPrompt('prompt-5')" class="text-xs bg-slate-700 hover:bg-slate-600 text-blue-300 px-3 py-1.5 rounded-lg border border-slate-600 transition flex items-center gap-1.5">
+                        <i class="fa-regular fa-copy"></i> Copiar Prompt NotebookLM
+                    </button>
+                </div>
+                <div class="mb-4 bg-slate-900/60 border border-slate-700/50 rounded-xl p-3 text-xs text-slate-400">
+                    <span class="font-semibold text-slate-300 block mb-1"><i class="fa-solid fa-lightbulb text-amber-400 mr-1"></i> Prompt sugerido para NotebookLM:</span>
+                    <code class="bg-slate-950 p-2 rounded block text-emerald-400 font-mono select-all break-words" id="prompt-5">"Explícame con mayor profundidad y un ejemplo sencillo el concepto de El fenómeno de la Sinergia según el texto de Chiavenato."</code>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Columna A: Cita / Evidencia en NotebookLM</label>
+                        <textarea id="cita-5" rows="5" placeholder="Pega aquí la cita de Chiavenato..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition resize-none break-words" oninput="handleInput(5)"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Columna B: Interpretación Propia (250 - 600 Caracteres)</label>
+                        <textarea id="interp-5" rows="5" placeholder="Sintetiza con tus propias palabras..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition resize-none break-words" oninput="handleInput(5)"></textarea>
+                        <div id="counter-status-5" aria-live="polite" class="mt-2 text-xs flex justify-between items-center font-medium">
+                            <span id="counter-msg-5" class="text-slate-400">🔴 Faltan 250 caracteres</span>
+                            <span id="counter-count-5" class="text-slate-500">0 / 600</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Concepto 6 -->
+            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-xl concept-card" id="card-concept-6">
+                <div class="flex justify-between items-start gap-4 mb-4">
+                    <div>
+                        <span class="text-xs font-bold text-blue-400 uppercase tracking-widest">Concepto #6</span>
+                        <h3 class="text-lg font-bold text-white">Homeostasis o Equilibrio Dinámico</h3>
+                    </div>
+                    <button onclick="copyPrompt('prompt-6')" class="text-xs bg-slate-700 hover:bg-slate-600 text-blue-300 px-3 py-1.5 rounded-lg border border-slate-600 transition flex items-center gap-1.5">
+                        <i class="fa-regular fa-copy"></i> Copiar Prompt NotebookLM
+                    </button>
+                </div>
+                <div class="mb-4 bg-slate-900/60 border border-slate-700/50 rounded-xl p-3 text-xs text-slate-400">
+                    <span class="font-semibold text-slate-300 block mb-1"><i class="fa-solid fa-lightbulb text-amber-400 mr-1"></i> Prompt sugerido para NotebookLM:</span>
+                    <code class="bg-slate-950 p-2 rounded block text-emerald-400 font-mono select-all break-words" id="prompt-6">"Explícame con mayor profundidad y un ejemplo sencillo el concepto de Homeostasis o Equilibrio Dinámico según el texto de Chiavenato."</code>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Columna A: Cita / Evidencia en NotebookLM</label>
+                        <textarea id="cita-6" rows="5" placeholder="Pega aquí la cita de Chiavenato..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition resize-none break-words" oninput="handleInput(6)"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Columna B: Interpretación Propia (250 - 600 Caracteres)</label>
+                        <textarea id="interp-6" rows="5" placeholder="Sintetiza con tus propias palabras..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition resize-none break-words" oninput="handleInput(6)"></textarea>
+                        <div id="counter-status-6" aria-live="polite" class="mt-2 text-xs flex justify-between items-center font-medium">
+                            <span id="counter-msg-6" class="text-slate-400">🔴 Faltan 250 caracteres</span>
+                            <span id="counter-count-6" class="text-slate-500">0 / 600</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Concepto 7 -->
+            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-xl concept-card" id="card-concept-7">
+                <div class="flex justify-between items-start gap-4 mb-4">
+                    <div>
+                        <span class="text-xs font-bold text-blue-400 uppercase tracking-widest">Concepto #7</span>
+                        <h3 class="text-lg font-bold text-white">Entropía Negativa (Negentropía)</h3>
+                    </div>
+                    <button onclick="copyPrompt('prompt-7')" class="text-xs bg-slate-700 hover:bg-slate-600 text-blue-300 px-3 py-1.5 rounded-lg border border-slate-600 transition flex items-center gap-1.5">
+                        <i class="fa-regular fa-copy"></i> Copiar Prompt NotebookLM
+                    </button>
+                </div>
+                <div class="mb-4 bg-slate-900/60 border border-slate-700/50 rounded-xl p-3 text-xs text-slate-400">
+                    <span class="font-semibold text-slate-300 block mb-1"><i class="fa-solid fa-lightbulb text-amber-400 mr-1"></i> Prompt sugerido para NotebookLM:</span>
+                    <code class="bg-slate-950 p-2 rounded block text-emerald-400 font-mono select-all break-words" id="prompt-7">"Explícame con mayor profundidad y un ejemplo sencillo el concepto de Entropía Negativa (Negentropía) e Importación de Energía según el texto de Chiavenato."</code>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Columna A: Cita / Evidencia en NotebookLM</label>
+                        <textarea id="cita-7" rows="5" placeholder="Pega aquí la cita de Chiavenato..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition resize-none break-words" oninput="handleInput(7)"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Columna B: Interpretación Propia (250 - 600 Caracteres)</label>
+                        <textarea id="interp-7" rows="5" placeholder="Sintetiza con tus propias palabras..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition resize-none break-words" oninput="handleInput(7)"></textarea>
+                        <div id="counter-status-7" aria-live="polite" class="mt-2 text-xs flex justify-between items-center font-medium">
+                            <span id="counter-msg-7" class="text-slate-400">🔴 Faltan 250 caracteres</span>
+                            <span id="counter-count-7" class="text-slate-500">0 / 600</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-between pt-4">
+                <button onclick="switchModule(1)" class="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-slate-200 font-semibold rounded-xl shadow-lg transition flex items-center gap-2">
+                    <i class="fa-solid fa-arrow-left"></i> Volver al Módulo 1
+                </button>
+                <button onclick="switchModule(3)" class="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl shadow-lg transition flex items-center gap-2">
+                    Avanzar al Módulo 3 <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- MÓDULO 3 -->
+        <div id="module-3" class="module-content space-y-6 hidden">
+            <!-- Concepto 8 -->
+            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-xl concept-card" id="card-concept-8">
+                <div class="flex justify-between items-start gap-4 mb-4">
+                    <div>
+                        <span class="text-xs font-bold text-blue-400 uppercase tracking-widest">Concepto #8</span>
+                        <h3 class="text-lg font-bold text-white">Principio de Equifinalidad</h3>
+                    </div>
+                    <button onclick="copyPrompt('prompt-8')" class="text-xs bg-slate-700 hover:bg-slate-600 text-blue-300 px-3 py-1.5 rounded-lg border border-slate-600 transition flex items-center gap-1.5">
+                        <i class="fa-regular fa-copy"></i> Copiar Prompt NotebookLM
+                    </button>
+                </div>
+                <div class="mb-4 bg-slate-900/60 border border-slate-700/50 rounded-xl p-3 text-xs text-slate-400">
+                    <span class="font-semibold text-slate-300 block mb-1"><i class="fa-solid fa-lightbulb text-amber-400 mr-1"></i> Prompt sugerido para NotebookLM:</span>
+                    <code class="bg-slate-950 p-2 rounded block text-emerald-400 font-mono select-all break-words" id="prompt-8">"Explícame con mayor profundidad y un ejemplo sencillo el concepto de Principio de Equifinalidad según el texto de Chiavenato."</code>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Columna A: Cita / Evidencia en NotebookLM</label>
+                        <textarea id="cita-8" rows="5" placeholder="Pega aquí la cita de Chiavenato..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition resize-none break-words" oninput="handleInput(8)"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Columna B: Interpretación Propia (250 - 600 Caracteres)</label>
+                        <textarea id="interp-8" rows="5" placeholder="Sintetiza con tus propias palabras..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition resize-none break-words" oninput="handleInput(8)"></textarea>
+                        <div id="counter-status-8" aria-live="polite" class="mt-2 text-xs flex justify-between items-center font-medium">
+                            <span id="counter-msg-8" class="text-slate-400">🔴 Faltan 250 caracteres</span>
+                            <span id="counter-count-8" class="text-slate-500">0 / 600</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Concepto 9 -->
+            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-xl concept-card" id="card-concept-9">
+                <div class="flex justify-between items-start gap-4 mb-4">
+                    <div>
+                        <span class="text-xs font-bold text-blue-400 uppercase tracking-widest">Concepto #9</span>
+                        <h3 class="text-lg font-bold text-white">El Concepto del "Hombre Funcional"</h3>
+                    </div>
+                    <button onclick="copyPrompt('prompt-9')" class="text-xs bg-slate-700 hover:bg-slate-600 text-blue-300 px-3 py-1.5 rounded-lg border border-slate-600 transition flex items-center gap-1.5">
+                        <i class="fa-regular fa-copy"></i> Copiar Prompt NotebookLM
+                    </button>
+                </div>
+                <div class="mb-4 bg-slate-900/60 border border-slate-700/50 rounded-xl p-3 text-xs text-slate-400">
+                    <span class="font-semibold text-slate-300 block mb-1"><i class="fa-solid fa-lightbulb text-amber-400 mr-1"></i> Prompt sugerido para NotebookLM:</span>
+                    <code class="bg-slate-950 p-2 rounded block text-emerald-400 font-mono select-all break-words" id="prompt-9">"Explícame con mayor profundidad y un ejemplo sencillo el concepto de El Concepto del Hombre Funcional según el texto de Chiavenato."</code>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Columna A: Cita / Evidencia en NotebookLM</label>
+                        <textarea id="cita-9" rows="5" placeholder="Pega aquí la cita de Chiavenato..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition resize-none break-words" oninput="handleInput(9)"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Columna B: Interpretación Propia (250 - 600 Caracteres)</label>
+                        <textarea id="interp-9" rows="5" placeholder="Sintetiza con tus propias palabras..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition resize-none break-words" oninput="handleInput(9)"></textarea>
+                        <div id="counter-status-9" aria-live="polite" class="mt-2 text-xs flex justify-between items-center font-medium">
+                            <span id="counter-msg-9" class="text-slate-400">🔴 Faltan 250 caracteres</span>
+                            <span id="counter-count-9" class="text-slate-500">0 / 600</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Concepto 10 -->
+            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-xl concept-card" id="card-concept-10">
+                <div class="flex justify-between items-start gap-4 mb-4">
+                    <div>
+                        <span class="text-xs font-bold text-blue-400 uppercase tracking-widest">Concepto #10</span>
+                        <h3 class="text-lg font-bold text-white">Retroalimentación (Feedback) como Control</h3>
+                    </div>
+                    <button onclick="copyPrompt('prompt-10')" class="text-xs bg-slate-700 hover:bg-slate-600 text-blue-300 px-3 py-1.5 rounded-lg border border-slate-600 transition flex items-center gap-1.5">
+                        <i class="fa-regular fa-copy"></i> Copiar Prompt NotebookLM
+                    </button>
+                </div>
+                <div class="mb-4 bg-slate-900/60 border border-slate-700/50 rounded-xl p-3 text-xs text-slate-400">
+                    <span class="font-semibold text-slate-300 block mb-1"><i class="fa-solid fa-lightbulb text-amber-400 mr-1"></i> Prompt sugerido para NotebookLM:</span>
+                    <code class="bg-slate-950 p-2 rounded block text-emerald-400 font-mono select-all break-words" id="prompt-10">"Explícame con mayor profundidad y un ejemplo sencillo el concepto de La Retroalimentación (Feedback) como Mecanismo de Control según el texto de Chiavenato."</code>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Columna A: Cita / Evidencia en NotebookLM</label>
+                        <textarea id="cita-10" rows="5" placeholder="Pega aquí la cita de Chiavenato..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition resize-none break-words" oninput="handleInput(10)"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Columna B: Interpretación Propia (250 - 600 Caracteres)</label>
+                        <textarea id="interp-10" rows="5" placeholder="Sintetiza con tus propias palabras..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition resize-none break-words" oninput="handleInput(10)"></textarea>
+                        <div id="counter-status-10" aria-live="polite" class="mt-2 text-xs flex justify-between items-center font-medium">
+                            <span id="counter-msg-10" class="text-slate-400">🔴 Faltan 250 caracteres</span>
+                            <span id="counter-count-10" class="text-slate-500">0 / 600</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel Final de Transmisión y Exportación -->
+            <div class="bg-gradient-to-r from-slate-800 to-slate-900 border border-blue-500/30 rounded-2xl p-6 shadow-2xl space-y-6">
+                <div>
+                    <h3 class="text-lg font-bold text-white mb-1"><i class="fa-solid fa-paper-plane text-emerald-400 mr-2"></i> Envío y Finalización del Taller</h3>
+                    <p class="text-xs text-slate-400">Verifica que los 10 conceptos hayan sido completados. Primero debes transmitir las respuestas al docente para desbloquear la descarga del informe PDF.</p>
+                </div>
+
+                <div class="flex flex-col md:flex-row gap-4 items-center justify-between pt-2">
+                    <!-- Botón Enviar Trabajo (CTA Principal) -->
+                    <button id="btn-send-data" onclick="sendData()" class="w-full md:w-auto px-8 py-4 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-bold text-base rounded-xl shadow-lg shadow-emerald-900/40 transition hover:scale-[1.02] flex items-center justify-center gap-3">
+                        <i class="fa-solid fa-cloud-arrow-up text-xl"></i> 1. Enviar Trabajo al Docente
+                    </button>
+
+                    <!-- Botón Exportar PDF (Bloqueado Inicialmente) -->
+                    <div class="w-full md:w-auto text-center md:text-right">
+                        <button id="btn-export-pdf" onclick="openPreview()" disabled class="w-full md:w-auto px-8 py-4 bg-blue-600/50 text-slate-300 font-bold text-base rounded-xl shadow opacity-50 cursor-not-allowed transition flex items-center justify-center gap-3">
+                            <i class="fa-solid fa-file-pdf text-xl"></i> 2. Exportar a PDF / Imprimir
+                        </button>
+                        <span id="pdf-tooltip" class="block text-[11px] text-amber-400/90 mt-2">⚠️ Debes enviar tu trabajo para habilitar el reporte PDF.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Rúbrica de Evaluación Expandible -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+        <details class="bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden shadow-xl">
+            <summary class="p-4 cursor-pointer font-bold text-slate-200 hover:bg-slate-750 transition flex items-center justify-between text-sm select-none">
+                <span><i class="fa-solid fa-table-list text-blue-400 mr-2"></i> Ver Rúbrica de Evaluación Institucional (5 Criterios)</span>
+                <i class="fa-solid fa-chevron-down text-slate-400"></i>
+            </summary>
+            <div class="p-4 overflow-x-auto border-t border-slate-700">
+                <table class="w-full text-xs text-left text-slate-300 border-collapse">
+                    <thead class="bg-slate-900 text-slate-200">
+                        <tr>
+                            <th class="p-3 border border-slate-700">Criterio</th>
+                            <th class="p-3 border border-slate-700">Excelente (5.0)</th>
+                            <th class="p-3 border border-slate-700">Bueno (4.0)</th>
+                            <th class="p-3 border border-slate-700">Aceptable (3.0)</th>
+                            <th class="p-3 border border-slate-700">Insuficiente (2.0)</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-700">
+                        <tr>
+                            <td class="p-3 font-semibold text-slate-200 border border-slate-700">1. Fidelidad Citas Chiavenato</td>
+                            <td class="p-3 border border-slate-700">Cita de forma exacta y highly relevante los 10 conceptos.</td>
+                            <td class="p-3 border border-slate-700">Cita adecuadamente en 8-9 conceptos.</td>
+                            <td class="p-3 border border-slate-700">Cita fragmentos poco claros o en 5-7 conceptos.</td>
+                            <td class="p-3 border border-slate-700">Omite citas o incluye información errónea.</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 font-semibold text-slate-200 border border-slate-700">2. Síntesis e Interpretación</td>
+                            <td class="p-3 border border-slate-700">Demuestra apropiación profunda y original dentro del rango exigido.</td>
+                            <td class="p-3 border border-slate-700">Buena redacción con ligereza en el análisis conceptual.</td>
+                            <td class="p-3 border border-slate-700">Interpretación literal con poca elaboración propia.</td>
+                            <td class="p-3 border border-slate-700">Copia textual de la cita en el análisis.</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 font-semibold text-slate-200 border border-slate-700">3. Rigor de Extensión (250-600)</td>
+                            <td class="p-3 border border-slate-700">Cumple al 100% el rango de caracteres en los 10 ítems.</td>
+                            <td class="p-3 border border-slate-700">Cumple el rango en 8-9 ítems.</td>
+                            <td class="p-3 border border-slate-700">Cumple el rango en 5-7 ítems.</td>
+                            <td class="p-3 border border-slate-700">Incumple recurrentemente los límites de caracteres.</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 font-semibold text-slate-200 border border-slate-700">4. Uso de NotebookLM</td>
+                            <td class="p-3 border border-slate-700">Aprovechamiento avanzado de prompts para enriquecer respuestas.</td>
+                            <td class="p-3 border border-slate-700">Uso estándar de los prompts sugeridos.</td>
+                            <td class="p-3 border border-slate-700">Uso elemental sin explorar profundización.</td>
+                            <td class="p-3 border border-slate-700">Sin evidencia de interacción con la IA.</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 font-semibold text-slate-200 border border-slate-700">5. Entrega y Registro</td>
+                            <td class="p-3 border border-slate-700">Transmisión exitosa a Sheets y generación de PDF en norma.</td>
+                            <td class="p-3 border border-slate-700">Transmisión con ajustes menores en formato PDF.</td>
+                            <td class="p-3 border border-slate-700">Presenta leves retrasos o fallos en respaldo JSON.</td>
+                            <td class="p-3 border border-slate-700">No registra transmisión en la plataforma docente.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </details>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-slate-950 border-t border-slate-800 py-6 text-center text-xs text-slate-500">
+        <p>Politécnico Grancolombiano • Sistema de Miniwebs Tecnopedagógicas v2.5</p>
+        <p class="mt-1 font-mono">ID Actividad: TO_ACT14 • Entorno Seguro de Aprendizaje</p>
+    </footer>
+
+    <script>
+        // CONSTANTE OBLIGATORIA APPS SCRIPT WEBHOOK
+        const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbykP5mOpfvgjO-R3aMf2t8tzAg-nc5Tc2cpVmtpRh33C-ZwYUW9G9-CWr-bq7zVEv5s/exec";
+        
+        // Estado Global de Transmisión
+        let datosTransmitidos = false;
+
+        // Función de escape HTML para evitar inyecciones XSS y desconfiguración de maquetado en PDF
+        function esc(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        // Conceptos TGS Map
+        const CONCEPTOS = [
+            "Definición de Sistema",
+            "Sistema Abierto vs. Sistema Cerrado",
+            "Parámetros Sistémicos",
+            "Expansionismo y Pensamiento Sintético",
+            "Sinergia",
+            "Homeostasis o Equilibrio Dinámico",
+            "Entropía Negativa (Negentropía)",
+            "Principio de Equifinalidad",
+            "El Concepto del Hombre Funcional",
+            "Retroalimentación (Feedback) como Control"
+        ];
+
+        // Sincronización de interfaz según estado de transmisión
+        function updateLockUI() {
+            const btnPdf = document.getElementById('btn-export-pdf');
+            const tooltip = document.getElementById('pdf-tooltip');
+
+            if (datosTransmitidos) {
+                btnPdf.removeAttribute('disabled');
+                btnPdf.className = "w-full md:w-auto px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-base rounded-xl shadow-lg transition hover:scale-[1.02] flex items-center justify-center gap-3 cursor-pointer";
+                tooltip.innerHTML = "🟢 <strong>Envío registrado.</strong> Puedes generar e imprimir tu informe PDF oficial.";
+                tooltip.className = "block text-[11px] text-emerald-400 mt-2";
+            } else {
+                btnPdf.setAttribute('disabled', 'disabled');
+                btnPdf.className = "w-full md:w-auto px-8 py-4 bg-blue-600/50 text-slate-300 font-bold text-base rounded-xl shadow opacity-50 cursor-not-allowed transition flex items-center justify-center gap-3";
+                tooltip.innerHTML = "⚠️ Debes enviar tu trabajo para habilitar el reporte PDF.";
+                tooltip.className = "block text-[11px] text-amber-400/90 mt-2";
+            }
+        }
+
+        // Cambiar entre Módulos (Tabs)
+        function switchModule(modNum) {
+            document.querySelectorAll('.module-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`module-${modNum}`).classList.remove('hidden');
+
+            for (let i = 1; i <= 3; i++) {
+                const tab = document.getElementById(`tab-mod-${i}`);
+                if (i === modNum) {
+                    tab.className = "px-5 py-3 rounded-t-xl text-sm font-semibold transition border-b-2 border-blue-500 bg-slate-800 text-blue-400 flex items-center gap-2 whitespace-nowrap";
+                } else {
+                    tab.className = "px-5 py-3 rounded-t-xl text-sm font-semibold transition border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 whitespace-nowrap";
+                }
+            }
+            window.scrollTo({ top: 300, behavior: 'smooth' });
+        }
+
+        // Manejador de Inputs y Contadores de Caracteres Dinámicos (Unificado con .trim())
+        function handleInput(index) {
+            const interpText = document.getElementById(`interp-${index}`).value.trim();
+            const length = interpText.length;
+
+            const msgEl = document.getElementById(`counter-msg-${index}`);
+            const countEl = document.getElementById(`counter-count-${index}`);
+
+            countEl.innerText = `${length} / 600`;
+
+            if (length === 0) {
+                msgEl.innerText = "🔴 Faltan 250 caracteres";
+                msgEl.className = "text-slate-400";
+            } else if (length < 250) {
+                const diff = 250 - length;
+                msgEl.innerText = `🔴 Faltan ${diff} caracteres para el mínimo (250)`;
+                msgEl.className = "text-red-400 font-semibold";
+            } else if (length >= 250 && length <= 600) {
+                msgEl.innerText = "🟢 ¡Extensión óptima lograda!";
+                msgEl.className = "text-emerald-400 font-bold";
+            } else {
+                const excess = length - 600;
+                msgEl.innerText = `🟡 Excedido por ${excess} caracteres (Máx 600)`;
+                msgEl.className = "text-amber-400 font-semibold";
+            }
+
+            saveToLocalStorage();
+            updateProgress();
+        }
+
+        // Actualizar Barra de Progreso General
+        function updateProgress() {
+            let completedCount = 0;
+            for (let i = 1; i <= 10; i++) {
+                const val = document.getElementById(`interp-${i}`)?.value.trim().length || 0;
+                if (val >= 250 && val <= 600) {
+                    completedCount++;
+                }
+            }
+            const percentage = Math.round((completedCount / 10) * 100);
+            document.getElementById('progress-bar').style.width = `${percentage}%`;
+            document.getElementById('progress-text').innerText = `${percentage}% Completado (${completedCount}/10)`;
+        }
+
+        // Copiar Prompts de NotebookLM leyendo directamente del elemento DOM
+        function copyPrompt(promptId) {
+            const promptElement = document.getElementById(promptId);
+            const text = promptElement ? promptElement.innerText.replace(/^"|"$/g, '') : '';
+            if (!text) return;
+
+            navigator.clipboard.writeText(text).then(() => {
+                alert(`📋 Prompt copiado al portapapeles:\n\n"${text}"`);
+            }).catch(() => {
+                alert("Copie manualmente el texto del prompt.");
+            });
+        }
+
+        // Guardar en LocalStorage
+        function saveToLocalStorage() {
+            const data = {
+                materia: document.getElementById('input-materia')?.value,
+                actividad_id: document.getElementById('input-actividad-id')?.value,
+                grupo: document.getElementById('input-grupo')?.value,
+                participantes: document.getElementById('input-participantes')?.value,
+                datosTransmitidos: datosTransmitidos,
+                items: {}
+            };
+
+            for (let i = 1; i <= 10; i++) {
+                data.items[`cita_${i}`] = document.getElementById(`cita-${i}`)?.value || "";
+                data.items[`interp_${i}`] = document.getElementById(`interp-${i}`)?.value || "";
+            }
+
+            localStorage.setItem('TGS_TO_ACT14_DATA', JSON.stringify(data));
+        }
+
+        // Cargar de LocalStorage
+        function loadFromLocalStorage() {
+            const saved = localStorage.getItem('TGS_TO_ACT14_DATA');
+            if (!saved) return;
+
+            try {
+                const data = JSON.parse(saved);
+                if (data.materia) document.getElementById('input-materia').value = data.materia;
+                if (data.grupo) document.getElementById('input-grupo').value = data.grupo;
+                if (data.participantes) document.getElementById('input-participantes').value = data.participantes;
+                
+                datosTransmitidos = Boolean(data.datosTransmitidos);
+                updateLockUI();
+
+                if (data.items) {
+                    for (let i = 1; i <= 10; i++) {
+                        if (data.items[`cita_${i}`]) document.getElementById(`cita-${i}`).value = data.items[`cita_${i}`];
+                        if (data.items[`interp_${i}`]) {
+                            document.getElementById(`interp-${i}`).value = data.items[`interp_${i}`];
+                            handleInput(i);
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error("Error al cargar localStorage", e);
+            }
+        }
+
+        // Descargar Backup JSON
+        function downloadBackup() {
+            saveToLocalStorage();
+            const saved = localStorage.getItem('TGS_TO_ACT14_DATA');
+            const blob = new Blob([saved], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Respaldo_TGS_TO_ACT14_${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Cargar Backup JSON - Resetea `datosTransmitidos = false` para cerrar el bypass de seguridad
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    // Forzar re-envío tras cargar un archivo manipulado o externo
+                    data.datosTransmitidos = false;
+                    localStorage.setItem('TGS_TO_ACT14_DATA', JSON.stringify(data));
+                    loadFromLocalStorage();
+                    alert("✅ Respaldo JSON cargado exitosamente. Por seguridad, debes presionar 'Enviar Trabajo' para re-validar la transmisión antes de exportar a PDF.");
+                } catch (err) {
+                    alert("❌ El archivo JSON no tiene un formato válido.");
+                }
+            };
+            reader.onerror = function() {
+                alert("❌ Ocurrió un error al leer el archivo de respaldo.");
+            };
+            reader.readAsText(file);
+        }
+
+        // Estandarización de Captura para Sheets incluyendo Citas (Columna A) e Interpretaciones (Columna B)
+        function getFormData() {
+            const getCleanValue = (id) => {
+                const val = document.getElementById(id)?.value;
+                return (val && val.trim().length > 0) ? val.trim() : "";
+            };
+
+            const payload = {
+                materia: getCleanValue('input-materia') || "Teoría de la Organización",
+                actividad_id: getCleanValue('input-actividad-id') || "TO_ACT14",
+                grupo: getCleanValue('input-grupo'),
+                participantes: getCleanValue('input-participantes'),
+                estado: "Entregado"
+            };
+
+            for (let i = 1; i <= 10; i++) {
+                payload[`cita${i}`] = getCleanValue(`cita-${i}`);
+                payload[`item${i}`] = getCleanValue(`interp-${i}`);
+            }
+
+            return payload;
+        }
+
+        // Validar campos de identificación y rangos de caracteres
+        function validateAllFields() {
+            const grupo = document.getElementById('input-grupo')?.value.trim();
+            const participantes = document.getElementById('input-participantes')?.value.trim();
+
+            if (!grupo || !participantes) {
+                return { valid: false, errorType: 'identity' };
+            }
+
+            const invalidItems = [];
+            for (let i = 1; i <= 10; i++) {
+                const len = document.getElementById(`interp-${i}`)?.value.trim().length || 0;
+                if (len < 250 || len > 600) {
+                    invalidItems.push(i);
+                }
+            }
+
+            if (invalidItems.length > 0) {
+                return { valid: false, errorType: 'length', invalidItems };
+            }
+
+            return { valid: true };
+        }
+
+        // Transmisión Webhook con Mensajería Honesta
+        const sendData = async () => {
+            const validation = validateAllFields();
+
+            if (!validation.valid) {
+                if (validation.errorType === 'identity') {
+                    alert("⚠️ Por favor completa los campos obligatorios de 'Grupo / Subgrupo' e 'Integrantes del Equipo' en la Sección 0 antes de realizar la entrega.");
+                    return;
+                } else if (validation.errorType === 'length') {
+                    alert(`⚠️ Atención: Tienes ${validation.invalidItems.length} concepto(s) incompletos o fuera del rango de 250 a 600 caracteres (Ítems: ${validation.invalidItems.join(', ')}). Por favor ajústalos antes de enviar.`);
+                    return;
+                }
+            }
+
+            const btnSend = document.getElementById('btn-send-data');
+            btnSend.disabled = true;
+            btnSend.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-xl"></i> Transmitiendo al servidor...';
+
+            try {
+                await fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(getFormData())
+                });
+
+                datosTransmitidos = true;
+                saveToLocalStorage();
+                updateLockUI();
+
+                alert("📤 Envío realizado exitosamente hacia el sistema. Confirma la recepción final con tu docente y procede a exportar tu reporte PDF.");
+            } catch (error) {
+                alert("❌ Error de red al intentar transmitir los datos. Tu reporte PDF permanece bloqueado. Descarga tu copia de seguridad en JSON e reintenta el envío.");
+            } finally {
+                btnSend.disabled = false;
+                btnSend.innerHTML = '<i class="fa-solid fa-cloud-arrow-up text-xl"></i> 1. Enviar Trabajo al Docente';
+            }
+        };
+
+        // Generador Vista Previa PDF con Escape de HTML, Configuración A4 y Estilos de Impresión
+        function openPreview() {
+            if (!datosTransmitidos) {
+                alert("⛔ Acción bloqueada: Primero debes presionar el botón 'Enviar Trabajo' para registrar tus respuestas en el sistema docente.");
+                return;
+            }
+
+            const materia = document.getElementById('input-materia')?.value || "Teoría de la Organización";
+            const actId = document.getElementById('input-actividad-id')?.value || "TO_ACT14";
+            const grupo = document.getElementById('input-grupo')?.value || "Sin Grupo";
+            const participantes = document.getElementById('input-participantes')?.value || "Sin Integrantes";
+
+            let conceptsHtml = '';
+            for (let i = 1; i <= 10; i++) {
+                const cita = document.getElementById(`cita-${i}`)?.value.trim() || 'Sin Cita Registrada';
+                const interp = document.getElementById(`interp-${i}`)?.value.trim() || 'Sin Interpretación Registrada';
+                
+                conceptsHtml += `
+                    <div class="concept-box" style="margin-bottom: 20px; padding: 15px; border: 1px solid #cbd5e1; border-radius: 8px; background-color: #f8fafc; page-break-inside: avoid; break-inside: avoid;">
+                        <h3 style="margin-top: 0; color: #1e40af; font-size: 14px; font-weight: bold;">Concepto ${i}: ${esc(CONCEPTOS[i-1])}</h3>
+                        <div style="margin-bottom: 10px;">
+                            <strong style="font-size: 11px; color: #475569; display: block;">Evidencia Cita Chiavenato (NotebookLM):</strong>
+                            <p style="font-size: 12px; font-style: italic; color: #334155; margin: 4px 0; padding: 8px; background: #ffffff; border-left: 3px solid #3b82f6; overflow-wrap: break-word; word-break: break-word; white-space: pre-wrap;">"${esc(cita)}"</p>
+                        </div>
+                        <div>
+                            <strong style="font-size: 11px; color: #475569; display: block;">Análisis e Interpretación Propia:</strong>
+                            <p style="font-size: 12px; color: #0f172a; margin: 4px 0; overflow-wrap: break-word; word-break: break-word; white-space: pre-wrap;">${esc(interp)}</p>
+                            <span style="font-size: 10px; color: #64748b;">(Extensión: ${interp.length} caracteres)</span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            const win = window.open('', '_blank');
+            if (!win) {
+                alert("⚠️ La ventana emergente fue bloqueada por tu navegador. Por favor permite las ventanas emergentes para visualizar el reporte PDF.");
+                return;
+            }
+
+            win.document.write(`
+                <!DOCTYPE html>
+                <html lang="es">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Reporte TGS - ${esc(actId)}</title>
+                    <style>
+                        @page {
+                            size: A4;
+                            margin: 15mm;
+                        }
+                        body {
+                            font-family: system-ui, -apple-system, sans-serif;
+                            color: #0f172a;
+                            margin: 20px;
+                            line-height: 1.4;
+                            -webkit-print-color-adjust: exact;
+                            print-color-adjust: exact;
+                        }
+                        .header { border-bottom: 2px solid #1e40af; padding-bottom: 10px; margin-bottom: 20px; }
+                        .no-print { background: #1e40af; color: white; border: none; padding: 10px 20px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-bottom: 20px; }
+                        @media print {
+                            .no-print { display: none !important; }
+                            body { margin: 0; }
+                            .concept-box { page-break-inside: avoid !important; break-inside: avoid !important; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <button class="no-print" onclick="window.print()">🖨️ Imprimir o Guardar como PDF</button>
+                    <div class="header">
+                        <h1 style="color: #1e40af; margin: 0; font-size: 20px;">Politécnico Grancolombiano - Informe TGS</h1>
+                        <p style="margin: 5px 0 0 0; font-size: 12px; color: #475569;">Teoría General de Sistemas • Análisis con NotebookLM</p>
+                    </div>
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 12px;">
+                        <tr>
+                            <td style="padding: 6px; background: #e2e8f0;"><strong>Materia:</strong> ${esc(materia)}</td>
+                            <td style="padding: 6px; background: #e2e8f0;"><strong>ID Actividad:</strong> ${esc(actId)}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 6px; background: #f1f5f9;"><strong>Grupo:</strong> ${esc(grupo)}</td>
+                            <td style="padding: 6px; background: #f1f5f9;"><strong>Integrantes:</strong> ${esc(participantes)}</td>
+                        </tr>
+                    </table>
+                    <h2>Matriz de los 10 Conceptos Fundamentales</h2>
+                    ${conceptsHtml}
+                </body>
+                </html>
+            `);
+            win.document.close();
+        }
+
+        // Inicialización
+        window.addEventListener('DOMContentLoaded', () => {
+            loadFromLocalStorage();
+            updateProgress();
+        });
+    </script>
+</body>
+</html>
